@@ -17,3 +17,4 @@ A customizable and animated AppBar for Flutter apps. Perfect for dynamic scroll-
 ```yaml
 dependencies:
   animated_custom_appbar: ^1.0.0
+# animated_custom_appbar

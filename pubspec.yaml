@@ -5,6 +5,7 @@ homepage: https://github.com/asseries/animated_custom_appbar
 repository: https://github.com/asseries/animated_custom_appbar
 issue_tracker: https://github.com/asseries/animated_custom_appbar/issues
 
+
 environment:
   sdk: ">=3.1.0 <4.0.0"
 

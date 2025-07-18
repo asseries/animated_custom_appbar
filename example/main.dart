@@ -22,6 +22,7 @@ class ExamplePage extends StatelessWidget {
     return AnimatedCustomAppBar(
       maxHeight: 180,
       minHeight: 76,
+      fadingBackgroundShadow: [],
       centerWidget: const Text("Hello Appbar!", style: TextStyle(fontSize: 18)),
       slivers: [
         SliverList.builder(

@@ -1,3 +1,7 @@
-## 0.0.1
 
-* TODO: Describe initial release.
+---
+
+## ✅ `CHANGELOG.md`
+```md
+## [1.0.0] - 2025-07-18
+- Initial release of AnimatedCustomAppBar

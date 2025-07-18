@@ -2,7 +2,7 @@
 
 A customizable and animated AppBar for Flutter apps. Perfect for dynamic scroll-based UIs with smooth transitions.
 
-![Demo GIF](https://raw.githubusercontent.com/yourusername/animated_custom_appbar/main/doc/demo.gif)
+![Demo GIF](https://raw.githubusercontent.com/asseries/animated_custom_appbar/main/doc/demo.gif)
 
 ## Features
 

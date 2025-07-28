@@ -6,7 +6,7 @@ void main() {
   test('Widget exists', () {
     final appBar = AnimatedCustomAppBar(
       centerWidget: Text('Test'),
-      slivers: const [],
+      children: const [],
     );
     expect(appBar.centerWidget, isNotNull);
   });

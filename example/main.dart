@@ -24,7 +24,7 @@ class ExamplePage extends StatelessWidget {
       minHeight: 76,
       fadingBackgroundShadow: [],
       centerWidget: const Text("Hello Appbar!", style: TextStyle(fontSize: 18)),
-      slivers: [
+      children: [
         SliverList.builder(
           itemCount: 20,
           itemBuilder: (_, i) => ListTile(title: Text("Item $i")),

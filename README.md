@@ -41,19 +41,28 @@ class MyApp extends StatelessWidget {
 class ExamplePage extends StatelessWidget {
   const ExamplePage({super.key});
 
+  final scaffoldKey = GlobalKey<ScaffoldState>();
+  
   @override
   Widget build(BuildContext context) {
-    return AnimatedCustomAppBar(
-      maxHeight: 180,
-      minHeight: 76,
-      fadingBackgroundShadow: [],
-      centerWidget: const Text("Hello Appbar!", style: TextStyle(fontSize: 18)),
-      slivers: [
-        SliverList.builder(
-          itemCount: 20,
-          itemBuilder: (_, i) => ListTile(title: Text("Item $i")),
-        ),
-      ],
+    return Scaffold(
+      key: scaffoldKey,
+      drawer: const Drawer(),
+      body: AnimatedCustomAppBar(
+        maxHeight: 180,
+        minHeight: 76,
+        fadingBackgroundShadow: [],
+        centerWidget: const Text("Hello Appbar!", style: TextStyle(fontSize: 18)),
+        leftWidgetPressed: () => scaffoldKey.currentState?.openDrawer(),
+        chuildren: [
+          ListView.builder(
+            itemCount: 20,
+            shrinkWrap: true,
+            physics: const BouncingScrollPhysics(),
+            itemBuilder: (_, i) => ListTile(title: Text("Item $i")),
+          ),
+        ],
+      )
     );
   }
 }
@@ -64,7 +73,7 @@ class ExamplePage extends StatelessWidget {
 
 ```yaml
 dependencies:
-  animated_custom_appbar: ^1.0.0
+  animated_custom_appbar: ^1.0.1
 # animated_custom_appbar
 
 

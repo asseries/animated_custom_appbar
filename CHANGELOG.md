@@ -22,3 +22,9 @@
 - Minor bug fixes and internal refactoring.
 - Improved inline documentation and code comments.
 
+## [1.0.1] - 2025-07-29
+
+### Added
+- Added `onRefresh` callback to support pull-to-refresh using `RefreshIndicator`.
+
+

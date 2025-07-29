@@ -17,6 +17,8 @@ smooth transitions.
 - Optional left and right icons
 - Custom fading background and radius
 - Beautiful transitions
+- Supports pull-to-refresh via the `onRefresh` callback.
+
 
 ## Getting Started
 
@@ -42,19 +44,26 @@ class ExamplePage extends StatelessWidget {
   const ExamplePage({super.key});
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
-  
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+
+  Future<void> _onRefresh() async {
+      
+  }
+}
+
+
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
       key: scaffoldKey,
       drawer: const Drawer(),
       body: AnimatedCustomAppBar(
         maxHeight: 180,
         minHeight: 76,
+        onRefresh: () => _onRefresh(),
         fadingBackgroundShadow: [],
         centerWidget: const Text("Hello Appbar!", style: TextStyle(fontSize: 18)),
         leftWidgetPressed: () => scaffoldKey.currentState?.openDrawer(),
-        chuildren: [
+        children: [
           ListView.builder(
             itemCount: 20,
             shrinkWrap: true,
@@ -63,8 +72,7 @@ class ExamplePage extends StatelessWidget {
           ),
         ],
       )
-    );
-  }
+  );
 }
 
 
@@ -73,7 +81,7 @@ class ExamplePage extends StatelessWidget {
 
 ```yaml
 dependencies:
-  animated_custom_appbar: ^1.0.1
+  animated_custom_appbar: ^1.0.2
 # animated_custom_appbar
 ```
 

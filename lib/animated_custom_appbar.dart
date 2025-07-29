@@ -2,72 +2,74 @@ import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
-/// A customizable animated app bar widget with scroll interaction,
-/// fading background, and action/profile icons.
-/// Designed to be flexible and elegant with visual polish.
+/// A customizable animated AppBar widget that reacts to scroll,
+/// shows a background image, and supports pull-to-refresh.
 class AnimatedCustomAppBar extends StatefulWidget {
-  // Optional background image widget
+  // Optional background image displayed behind the app bar
   final Widget? backgroundImage;
 
-  // Maximum expanded height of the AppBar
+  // Maximum height when app bar is fully expanded
   final double maxHeight;
 
-  // Minimum collapsed height of the AppBar
+  // Minimum height when app bar is collapsed
   final double minHeight;
 
-  // The widget placed in the center of the app bar
+  // Widget shown in the center (e.g., search bar or title)
   final Widget centerWidget;
 
-  // Optional left-side icon (typically profile or menu)
+  // Optional widget for the left-side icon (e.g., profile or menu)
   final Widget? profileIcon;
 
-  // Optional right-side icon (e.g., notification bell)
+  // Optional widget for the right-side icon (e.g., notification)
   final Widget? actionIcon;
 
-  // Called when centerWidget or left content is tapped
+  // Called when the center widget is tapped
   final VoidCallback? onTap;
 
-  // Optional external scroll controller
+  // Optional external scroll controller, useful if you want to control scroll outside
   final ScrollController? scrollController;
 
-  // Children below the AppBar in scrollable area
+  // The content widgets placed below the app bar
   final List<Widget> children;
 
-  // Height of the fading white background box
+  // Height of the white fading background box behind the top row
   final double fadingBackgroundHeight;
 
-  // Callback for left icon press
+  // Callback when left widget is pressed (icon/button)
   final GestureTapCallback? leftWidgetPressed;
 
-  // Callback for right icon press
+  // Callback when right widget is pressed (icon/button)
   final GestureTapCallback? rightWidgetPressed;
 
-  // Ripple color when tapping icons
+  // Color of the ripple effect when tapping icons
   final Color? widgetsRippleColor;
 
-  // Custom border radius for fading background
+  // Custom corner radius for the fading white background
   final BorderRadius? fadingBackgroundRadius;
 
-  // Custom shadow for fading background
+  // Custom shadow for the fading background
   final List<BoxShadow>? fadingBackgroundShadow;
 
-  // Top radius for scrollable content area
+  // Corner radius for the scrollable content's top area
   final double? scrollableContentTopRadius;
 
-  // Scroll physics for CustomScrollView
+  // Scroll physics (e.g., bounce, clamping)
   final ScrollPhysics? physics;
 
-  // App-wide background color
+  // Background color for the main container and scrollable content
   final Color? backgroundColor;
 
-  // Curve used for scale and animations
+  // Curve used for animations (e.g., scaling)
   final Curve curve;
 
-  // Opacity level for background image overlay
+  // Overlay opacity level for the background image
   final double? backgroundImageColorAlpha;
 
-  // Base background color behind everything
+  // Base background color behind everything (often transparent)
   final Color? baseBackgroundColor;
+
+  // Callback function for pull-to-refresh
+  final Future<void> Function()? onRefresh;
 
   const AnimatedCustomAppBar({
     super.key,
@@ -92,6 +94,7 @@ class AnimatedCustomAppBar extends StatefulWidget {
     this.backgroundImageColorAlpha = 0.5,
     this.baseBackgroundColor = Colors.transparent,
     this.physics = const BouncingScrollPhysics(),
+    this.onRefresh,
   }) : assert(maxHeight > minHeight, 'maxHeight must be greater than minHeight'),
         assert(fadingBackgroundHeight >= 0, 'fadingBackgroundHeight must be non-negative');
 
@@ -104,57 +107,56 @@ class _AnimatedCustomAppBarState extends State<AnimatedCustomAppBar> with Ticker
   late final AnimationController _animationController;
   late final Animation<double> _scaleAnimation;
 
-  // Shortcut for accessing animation progress (0.0 to 1.0)
+  // A shorthand getter to access animation controller's value
   double get t => _animationController.value;
 
   @override
   void initState() {
     super.initState();
 
-    // Use external scroll controller or create a new one
+    // Use external controller if provided; else create internal one
     _scrollController = widget.scrollController ?? ScrollController();
 
-    // Animation controller to interpolate values based on scroll
+    // Animation controller for animating UI changes on scroll
     _animationController = AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
 
-    // Scale animation for center widget
+    // Scale animation for center widget (e.g., search bar bounce)
     _scaleAnimation = Tween<double>(
       begin: 0.92,
       end: 1.0,
     ).animate(CurvedAnimation(parent: _animationController, curve: widget.curve));
 
-    // Attach listener to scroll controller
+    // Attach scroll listener to update animation based on offset
     _scrollController.addListener(_handleScroll);
   }
 
-  // Calculate scroll offset and update animation controller accordingly
+  /// Handles scroll changes and updates the animation progress
   void _handleScroll() {
     final offset = _scrollController.offset.clamp(0, widget.maxHeight - widget.minHeight);
     _animationController.value = offset / (widget.maxHeight - widget.minHeight);
   }
 
-  // Radius for fading background (shrinks as it scrolls)
+  // Calculates fading background radius based on scroll progress
   double getRadius() => (1 - t * 4) * (widget.fadingBackgroundHeight - 16);
 
-  // Opacity for fading background
+  // Calculates fading background opacity based on scroll progress
   double getOpacity() => (1 - t * 4).clamp(0.0, 1.0);
 
-  // Calculate icon padding size based on fading background height
-  double calculateIconRadius() =>
-      lerpDouble(4, 72, (widget.fadingBackgroundHeight - 56) / (200 - 56)) ?? 16;
+  // Calculates the padding for icons dynamically
+  double calculateIconRadius() => lerpDouble(4, 72, (widget.fadingBackgroundHeight - 56) / (200 - 56)) ?? 16;
 
-  // Circle box decoration for icon buttons
+  // Creates a circular box decoration with optional shadow
   BoxDecoration circularBoxDecoration(Color color) => BoxDecoration(
     shape: BoxShape.circle,
     color: color,
     boxShadow: [BoxShadow(color: Colors.black.withAlpha(15), blurRadius: 4)],
   );
 
-  // Padding scaling based on animation progress
+  // Scales padding based on scroll progress
   EdgeInsets scaledPadding(double base, double factor) =>
       EdgeInsets.symmetric(horizontal: base - (factor * (1 - t)), vertical: 24);
 
-  // Build tappable icon button
+  /// Reusable method to build an icon button with ripple and background
   Widget buildIconButton({
     required VoidCallback? onTap,
     required Widget icon,
@@ -167,18 +169,14 @@ class _AnimatedCustomAppBarState extends State<AnimatedCustomAppBar> with Ticker
         onTap: onTap,
         borderRadius: BorderRadius.circular(56),
         highlightColor: widget.widgetsRippleColor ?? Colors.green,
-        child: Ink(
-          decoration: circularBoxDecoration(bgColor),
-          padding: EdgeInsets.all(padding),
-          child: icon,
-        ),
+        child: Ink(decoration: circularBoxDecoration(bgColor), padding: EdgeInsets.all(padding), child: icon),
       ),
     );
   }
 
   @override
   void dispose() {
-    // Only dispose internal scroll controller
+    // Clean up internal controller if not using external one
     if (widget.scrollController == null) _scrollController.dispose();
     _animationController.dispose();
     super.dispose();
@@ -187,7 +185,6 @@ class _AnimatedCustomAppBarState extends State<AnimatedCustomAppBar> with Ticker
   @override
   Widget build(BuildContext context) {
     final mediaSize = MediaQuery.of(context).size;
-
     return AnimatedBuilder(
       animation: _animationController,
       builder: (context, child) {
@@ -196,14 +193,10 @@ class _AnimatedCustomAppBarState extends State<AnimatedCustomAppBar> with Ticker
 
         return Stack(
           children: [
-            // Solid base background layer
-            Container(
-              color: widget.baseBackgroundColor,
-              width: mediaSize.width,
-              height: mediaSize.height,
-            ),
+            // Base background color layer
+            Container(color: widget.baseBackgroundColor, width: mediaSize.width, height: mediaSize.height),
 
-            // Optional background image with fade overlay
+            // Optional background image with color overlay
             if (widget.backgroundImage != null)
               Container(
                 width: mediaSize.width,
@@ -214,55 +207,23 @@ class _AnimatedCustomAppBarState extends State<AnimatedCustomAppBar> with Ticker
                 child: widget.backgroundImage,
               ),
 
-            // Scrollable content area
+            // Scrollable area with pull-to-refresh
             NotificationListener<ScrollNotification>(
               onNotification: (notification) {
                 if (notification is ScrollUpdateNotification) _handleScroll();
                 return true;
               },
-              child: CustomScrollView(
-                controller: _scrollController,
-                physics: widget.physics,
-                slivers: [
-                  SliverList(
-                    delegate: SliverChildListDelegate([
-                      // Reserve space equal to app bar height
-                      SizedBox(height: widget.maxHeight - 16),
-
-                      // Transition top round area for content
-                      Container(
-                        height: 32,
-                        decoration: BoxDecoration(
-                          color: widget.backgroundColor,
-                          borderRadius: BorderRadius.vertical(
-                            top: Radius.circular(widget.scrollableContentTopRadius ?? radius),
-                          ),
-                        ),
-                      ),
-
-                      // Main scrollable content area
-                      Stack(
-                        children: [
-                          Container(
-                            width: mediaSize.width,
-                            height: mediaSize.height,
-                            decoration: BoxDecoration(
-                              color: widget.backgroundColor,
-                              borderRadius: BorderRadius.vertical(
-                                bottom: Radius.circular(widget.scrollableContentTopRadius ?? radius),
-                              ),
-                            ),
-                          ),
-                          Column(children: widget.children),
-                        ],
-                      ),
-                    ]),
-                  ),
-                ],
-              ),
+              child: widget.onRefresh != null
+                  ? RefreshIndicator(
+                onRefresh: widget.onRefresh!,
+                edgeOffset: widget.maxHeight - widget.minHeight + 20,
+                displacement: 40,
+                child: _buildScrollView(mediaSize),
+              )
+                  : _buildScrollView(mediaSize),
             ),
 
-            // White fading overlay background behind AppBar
+            // White fading background with shadow that shrinks on scroll
             Opacity(
               opacity: 1 - getOpacity(),
               child: Container(
@@ -270,14 +231,13 @@ class _AnimatedCustomAppBarState extends State<AnimatedCustomAppBar> with Ticker
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
                   color: widget.backgroundColor,
-                  borderRadius: widget.fadingBackgroundRadius ??
-                      BorderRadius.vertical(bottom: Radius.circular(radius)),
+                  borderRadius: widget.fadingBackgroundRadius ?? BorderRadius.vertical(bottom: Radius.circular(radius)),
                   boxShadow: widget.fadingBackgroundShadow ?? [],
                 ),
               ),
             ),
 
-            // Main AppBar with center + icons
+            // Top AppBar row (left icon + center widget + right icon)
             SafeArea(
               bottom: false,
               child: ScaleTransition(
@@ -286,7 +246,7 @@ class _AnimatedCustomAppBarState extends State<AnimatedCustomAppBar> with Ticker
                   padding: scaledPadding(12, 8),
                   child: Row(
                     children: [
-                      // Left (center + profile icon) widget area
+                      // Left: tappable profile/menu icon + center widget
                       Expanded(
                         child: GestureDetector(
                           onTap: widget.onTap,
@@ -303,16 +263,15 @@ class _AnimatedCustomAppBarState extends State<AnimatedCustomAppBar> with Ticker
                                   padding: const EdgeInsets.all(2.0),
                                   child: buildIconButton(
                                     onTap: widget.leftWidgetPressed,
-                                    icon: widget.profileIcon ??
-                                        Icon(Icons.menu_outlined,
-                                            size: 3 * sqrt(widget.fadingBackgroundHeight)),
+                                    icon:
+                                    widget.profileIcon ??
+                                        Icon(Icons.menu_outlined, size: 3 * sqrt(widget.fadingBackgroundHeight)),
                                     padding: iconPadding,
                                     bgColor: Colors.grey.shade200,
                                   ),
                                 ),
                                 const SizedBox(width: 8),
-
-                                // Center widget (text/title/any widget)
+                                // Center widget (e.g., title or search)
                                 Expanded(
                                   child: TweenAnimationBuilder<double>(
                                     tween: Tween(begin: 1.0, end: t >= 0.88 ? 1.1 : 1),
@@ -334,13 +293,12 @@ class _AnimatedCustomAppBarState extends State<AnimatedCustomAppBar> with Ticker
                         ),
                       ),
                       const SizedBox(width: 12),
-
-                      // Right-side action icon (notification or any widget)
+                      // Right icon button (e.g., notifications)
                       buildIconButton(
                         onTap: widget.rightWidgetPressed,
-                        icon: widget.actionIcon ??
-                            Icon(Icons.notifications_none_outlined,
-                                size: 3 * sqrt(widget.fadingBackgroundHeight)),
+                        icon:
+                        widget.actionIcon ??
+                            Icon(Icons.notifications_none_outlined, size: 3 * sqrt(widget.fadingBackgroundHeight)),
                         padding: iconPadding + 2,
                         bgColor: Colors.white,
                       ),
@@ -352,6 +310,46 @@ class _AnimatedCustomAppBarState extends State<AnimatedCustomAppBar> with Ticker
           ],
         );
       },
+    );
+  }
+
+  Widget _buildScrollView(Size mediaSize) {
+    return CustomScrollView(
+      controller: _scrollController,
+      physics: widget.physics,
+      slivers: [
+        SliverToBoxAdapter(
+          child: Column(
+            children: [
+              SizedBox(height: widget.maxHeight - 16),
+              Container(
+                height: 32,
+                decoration: BoxDecoration(
+                  color: widget.backgroundColor,
+                  borderRadius: BorderRadius.vertical(
+                    top: Radius.circular(widget.scrollableContentTopRadius ?? getRadius()),
+                  ),
+                ),
+              ),
+              Stack(
+                children: [
+                  Container(
+                    width: mediaSize.width,
+                    height: mediaSize.height,
+                    decoration: BoxDecoration(
+                      color: widget.backgroundColor,
+                      borderRadius: BorderRadius.vertical(
+                        bottom: Radius.circular(widget.scrollableContentTopRadius ?? getRadius()),
+                      ),
+                    ),
+                  ),
+                  Column(children: widget.children),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

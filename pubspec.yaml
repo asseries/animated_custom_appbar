@@ -1,6 +1,7 @@
 name: animated_custom_appbar
 description: A customizable and animated AppBar for Flutter apps.
-version: 1.0.2
+version: 1.0.3
+license: MIT
 homepage: https://github.com/asseries/animated_custom_appbar
 repository: https://github.com/asseries/animated_custom_appbar
 issue_tracker: https://github.com/asseries/animated_custom_appbar/issues
@@ -12,6 +13,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_lints: ^6.0.0
 
 dev_dependencies:
   flutter_test:

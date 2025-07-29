@@ -27,4 +27,9 @@
 ### Added
 - Added `onRefresh` callback to support pull-to-refresh using `RefreshIndicator`.
 
+## [1.0.3] - 2025-07-29
+
+### Fixed
+- Fixed a bug where background color with opacity was not properly applied.
+
 

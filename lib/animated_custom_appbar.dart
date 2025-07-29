@@ -5,72 +5,79 @@ import 'package:flutter/material.dart';
 /// A customizable animated AppBar widget that reacts to scroll,
 /// shows a background image, and supports pull-to-refresh.
 class AnimatedCustomAppBar extends StatefulWidget {
-  // Optional background image displayed behind the app bar
+  /// Optional background image displayed behind the app bar
   final Widget? backgroundImage;
 
-  // Maximum height when app bar is fully expanded
+  /// Maximum height when app bar is fully expanded
   final double maxHeight;
 
-  // Minimum height when app bar is collapsed
+  /// Minimum height when app bar is collapsed
   final double minHeight;
 
-  // Widget shown in the center (e.g., search bar or title)
+  /// Widget shown in the center (e.g., search bar or title)
   final Widget centerWidget;
 
-  // Optional widget for the left-side icon (e.g., profile or menu)
+  /// Optional widget for the left-side icon (e.g., profile or menu)
   final Widget? profileIcon;
 
-  // Optional widget for the right-side icon (e.g., notification)
+  /// Optional widget for the right-side icon (e.g., notification)
   final Widget? actionIcon;
 
-  // Called when the center widget is tapped
+  /// Called when the center widget is tapped
   final VoidCallback? onTap;
 
-  // Optional external scroll controller, useful if you want to control scroll outside
+  /// Optional external scroll controller, useful if you want to control scroll outside
   final ScrollController? scrollController;
 
-  // The content widgets placed below the app bar
+  /// The content widgets placed below the app bar
   final List<Widget> children;
 
-  // Height of the white fading background box behind the top row
+  /// Height of the white fading background box behind the top row
   final double fadingBackgroundHeight;
 
-  // Callback when left widget is pressed (icon/button)
+  /// Callback when left widget is pressed (icon/button)
   final GestureTapCallback? leftWidgetPressed;
 
-  // Callback when right widget is pressed (icon/button)
+  /// Callback when right widget is pressed (icon/button)
   final GestureTapCallback? rightWidgetPressed;
 
-  // Color of the ripple effect when tapping icons
+  /// Color of the ripple effect when tapping icons
   final Color? widgetsRippleColor;
 
-  // Custom corner radius for the fading white background
+  /// Custom corner radius for the fading white background
   final BorderRadius? fadingBackgroundRadius;
 
-  // Custom shadow for the fading background
+  /// Custom shadow for the fading background
   final List<BoxShadow>? fadingBackgroundShadow;
 
-  // Corner radius for the scrollable content's top area
+  /// Corner radius for the scrollable content's top area
   final double? scrollableContentTopRadius;
 
-  // Scroll physics (e.g., bounce, clamping)
+  /// Scroll physics (e.g., bounce, clamping)
   final ScrollPhysics? physics;
 
-  // Background color for the main container and scrollable content
+  /// Background color for the main container and scrollable content
   final Color? backgroundColor;
 
-  // Curve used for animations (e.g., scaling)
+  /// Curve used for animations (e.g., scaling)
   final Curve curve;
 
-  // Overlay opacity level for the background image
-  final double? backgroundImageColorAlpha;
+  /// Overlay opacity level for the background image
+  final int? backgroundImageColorAlpha;
 
-  // Base background color behind everything (often transparent)
+  /// Base background color behind everything (often transparent)
   final Color? baseBackgroundColor;
 
-  // Callback function for pull-to-refresh
+  /// Callback function for pull-to-refresh
   final Future<void> Function()? onRefresh;
 
+  /// Padding for the scrollable content
+  final EdgeInsetsGeometry? padding;
+
+  /// Margin for the main container
+  final EdgeInsetsGeometry? margin;
+
+  /// Creates a new [AnimatedCustomAppBar] widget.
   const AnimatedCustomAppBar({
     super.key,
     this.backgroundImage,
@@ -91,10 +98,12 @@ class AnimatedCustomAppBar extends StatefulWidget {
     this.scrollableContentTopRadius,
     this.backgroundColor = Colors.white,
     this.curve = Curves.linear,
-    this.backgroundImageColorAlpha = 0.5,
+    this.backgroundImageColorAlpha = 100,
     this.baseBackgroundColor = Colors.transparent,
     this.physics = const BouncingScrollPhysics(),
     this.onRefresh,
+    this.padding,
+    this.margin,
   }) : assert(maxHeight > minHeight, 'maxHeight must be greater than minHeight'),
         assert(fadingBackgroundHeight >= 0, 'fadingBackgroundHeight must be non-negative');
 
@@ -202,7 +211,7 @@ class _AnimatedCustomAppBarState extends State<AnimatedCustomAppBar> with Ticker
                 width: mediaSize.width,
                 height: mediaSize.height,
                 foregroundDecoration: BoxDecoration(
-                  color: widget.backgroundColor?.withOpacity(widget.backgroundImageColorAlpha ?? 0.1),
+                  color: widget.backgroundColor?.withAlpha(widget.backgroundImageColorAlpha ?? 20),
                 ),
                 child: widget.backgroundImage,
               ),
@@ -319,34 +328,27 @@ class _AnimatedCustomAppBarState extends State<AnimatedCustomAppBar> with Ticker
       physics: widget.physics,
       slivers: [
         SliverToBoxAdapter(
-          child: Column(
-            children: [
-              SizedBox(height: widget.maxHeight - 16),
-              Container(
-                height: 32,
-                decoration: BoxDecoration(
-                  color: widget.backgroundColor,
-                  borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(widget.scrollableContentTopRadius ?? getRadius()),
-                  ),
+          child: Padding(
+            padding: widget.margin ?? EdgeInsets.zero,
+            child: Container(
+              margin: EdgeInsets.only(top: widget.maxHeight - 16),
+              padding: EdgeInsets.only(top: 32),
+              decoration: BoxDecoration(
+                color: widget.backgroundColor,
+                borderRadius: BorderRadius.vertical(
+                  top: Radius.circular(widget.scrollableContentTopRadius ?? getRadius()),
                 ),
               ),
-              Stack(
-                children: [
-                  Container(
-                    width: mediaSize.width,
-                    height: mediaSize.height,
-                    decoration: BoxDecoration(
-                      color: widget.backgroundColor,
-                      borderRadius: BorderRadius.vertical(
-                        bottom: Radius.circular(widget.scrollableContentTopRadius ?? getRadius()),
-                      ),
-                    ),
-                  ),
-                  Column(children: widget.children),
-                ],
+              child: Padding(
+                padding: widget.padding ?? EdgeInsets.zero,
+                child: Column(
+                  children: [
+                    ...widget.children,
+                    const SizedBox(height: 64), // Extra space to avoid clash
+                  ],
+                ),
               ),
-            ],
+            ),
           ),
         ),
       ],
